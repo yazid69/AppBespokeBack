@@ -18,9 +18,13 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'idUser',
+        'nom',
+        'prenom',
+        'date_naissance',
+        'mdp_user',
         'email',
-        'password',
+        'num_tel',
     ];
 
     /**
@@ -29,7 +33,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'password',
+        'mdp_user',
         'remember_token',
     ];
 
@@ -41,4 +45,11 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Get the user's idUser.
+     *
+     * @return int
+     */
+    protected $primaryKey = 'idUser';
 }
