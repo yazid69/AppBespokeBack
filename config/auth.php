@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
+        'guard' => 'api',
         'passwords' => 'users',
     ],
 
@@ -36,9 +36,19 @@ return [
     */
 
     'guards' => [
+        'api' => [
+            'driver' => 'token',
+            'provider' => 'users',
+            'table' => 'personal_access_tokens',
+            'hash' => false,
+            'expire' => 60 * 60 * 24 * 7, // 7 days
+            'storage_key' => 'token',
+            'column' => 'api_token',
+        ],
+
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'createurs',
         ],
     ],
 
@@ -64,11 +74,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'createurs' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Createur::class,
+        ],
     ],
 
     /*

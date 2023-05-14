@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\InscriptionUserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -15,22 +17,76 @@ class UserController extends Controller
     {
         // créer un utilisateur
         $userDonnee = $request->validate([
+            "genre" => ["required", "string", "max:10"], // "Monsieur" ou "Madame
             "nom" => ["required", "string", "max:30"],
             "prenom" => ["required", "string", "max:30"],
             "date_naissance" => ["required", "date"],
             "email" => ["required", "string", "email", "max:40", "unique:users"],
             "mdp_user" => ["required", "string", "min:8", "max:30"],
             "num_tel" => ["required", "string", "max:20"],
+            "numRue" => ["required", "string", "max:10"],
+            "rue" => ["required", "string", "max:50"],
+            "codePostal" => ["required", "integer", "min:5"],
+            "ville" => ["required", "string", "max:30"],
+            "pays" => ["required", "string", "max:30"],
         ]);
         // hasher le mot de passe
         $userDonnee["mdp_user"] = Hash::make($userDonnee["mdp_user"]);
         // enregistrer l'utilisateur dans la base de données
         $user = User::create($userDonnee);
         // retourner la réponse quand l'utilisateur est créé
+
+        Mail::to($userDonnee["email"])->send(new InscriptionUserMail($userDonnee));
+
         return response()->json([
             "user" => $user,
             "message" => "Utilisateur créé avec succès",
             "status" => 201,
+        ]);
+    }
+
+    public function getUserById($idUser)
+    {
+        // récupérer l'utilisateur par son identifiant
+        $user = User::find($idUser);
+        // vérifier si l'utilisateur existe
+        if (!$user) {
+            return response()->json([
+                "message" => "Utilisateur non trouvé",
+                "status" => 404,
+            ]);
+        }
+        // ne renvoyer que le nom, prénom et la date de naissance de l'utilisateur
+        $user = [
+            'genre' => $user->genre,
+            'nom' => $user->nom,
+            'prenom' => $user->prenom,
+            'date_naissance' => $user->date_naissance,
+        ];
+        // retourner la réponse
+        return response()->json([
+            "user" => $user,
+            "status" => 200,
+        ]);
+    }
+
+    public function getUsers()
+    {
+        // récupérer tous les utilisateurs
+        $users = User::all();
+        // ne renvoyer que le prénom et la date de naissance de chaque utilisateur
+        $users = $users->map(function ($user) {
+            return [
+                'genre' => $user->genre,
+                'nom' => $user->nom,
+                'prenom' => $user->prenom,
+                'date_naissance' => $user->date_naissance,
+            ];
+        });
+        // retourner la réponse
+        return response()->json([
+            "users" => $users,
+            "status" => 200,
         ]);
     }
 
@@ -50,7 +106,7 @@ class UserController extends Controller
         }
         // créer le token
         $session_id = Hash::make($user->idUser);
-        $token = Str::random(60);
+        $token = $user->createToken($session_id)->plainTextToken;
         // retourner la réponse avec le token
         return response()->json([
             "user" => $user,
@@ -74,6 +130,11 @@ class UserController extends Controller
             "email" => ["nullable", "string", "email", "max:40", Rule::unique('users')->ignore($user->id)],
             "mdp_user" => ["nullable", "string", "min:8", "max:30"],
             "num_tel" => ["nullable", "string", "max:20"],
+            "numRue" => ["nullable", "string", "max:10"],
+            "rue" => ["nullable", "string", "max:50"],
+            "codePostal" => ["nullable", "integer", "min:5"],
+            "ville" => ["nullable", "string", "max:30"],
+            "pays" => ["nullable", "string", "max:30"],
         ]);
 
         // get the idUser from the url path
@@ -89,8 +150,9 @@ class UserController extends Controller
         $updatedData = array_merge($currentDonnee, array_filter($userDonnee));
 
         // mettre à jour les données de l'utilisateur
-        $sql = "UPDATE users SET nom = :nom, prenom = :prenom, date_naissance = :date_naissance, email = :email, mdp_user = :mdp_user, num_tel = :num_tel
-                WHERE idUser = :idUser";
+        $sql = "UPDATE users SET nom=:nom, prenom=:prenom, date_naissance=:date_naissance, email=:email,
+                    mdp_user=:mdp_user, num_tel=:num_tel, numRue=:numRue, rue=:rue, codePostal=:codePostal,
+                    ville=:ville, pays=:pays WHERE idUser=:idUser";
         $updatedDonnee = [
             "nom" => $updatedData["nom"],
             "prenom" => $updatedData["prenom"],
@@ -98,6 +160,11 @@ class UserController extends Controller
             "email" => $updatedData["email"],
             "mdp_user" => $updatedData["mdp_user"],
             "num_tel" => $updatedData["num_tel"],
+            "numRue" => $updatedData["numRue"],
+            "rue" => $updatedData["rue"],
+            "codePostal" => $updatedData["codePostal"],
+            "ville" => $updatedData["ville"],
+            "pays" => $updatedData["pays"],
             "idUser" => $userDonnee["idUser"],
         ];
         $result = DB::statement($sql, $updatedDonnee);
@@ -113,48 +180,6 @@ class UserController extends Controller
                 "status" => 500,
             ]);
         }
-    }
-
-    public function getUsers()
-    {
-        // récupérer tous les utilisateurs
-        $users = User::all();
-        // ne renvoyer que le prénom et la date de naissance de chaque utilisateur
-        $users = $users->map(function ($user) {
-            return [
-                'prenom' => $user->prenom,
-                'date_naissance' => $user->date_naissance,
-            ];
-        });
-        // retourner la réponse
-        return response()->json([
-            "users" => $users,
-            "status" => 200,
-        ]);
-    }
-
-    public function getUserById($id)
-    {
-        // récupérer l'utilisateur par son identifiant
-        $user = User::find($id);
-        // vérifier si l'utilisateur existe
-        if (!$user) {
-            return response()->json([
-                "message" => "Utilisateur non trouvé",
-                "status" => 404,
-            ]);
-        }
-        // ne renvoyer que le nom, prénom et la date de naissance de l'utilisateur
-        $user = [
-            'nom' => $user->nom,
-            'prenom' => $user->prenom,
-            'date_naissance' => $user->date_naissance,
-        ];
-        // retourner la réponse
-        return response()->json([
-            "user" => $user,
-            "status" => 200,
-        ]);
     }
 
     public function deleteUser(Request $request, $idUser)
@@ -177,7 +202,7 @@ class UserController extends Controller
 
         // retirer le token associé à l'utilisateur dans la base de données
         $user->tokens()->delete();
-        
+
         // supprimer l'utilisateur
         $user->delete();
         // retourner la réponse
@@ -186,4 +211,15 @@ class UserController extends Controller
             "status" => 200,
         ]);
     }
+
+    // public function logoutUser()
+    // {
+    //     auth()->user()->tokens()->each(function ($token, $key) {
+    //         $token->delete();
+    //     });
+    //     return response()->json([
+    //         "message" => "Déconnexion réussie",
+    //         "status" => 200,
+    //     ]);
+    // }
 }

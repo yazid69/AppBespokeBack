@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CreateurController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ArticlesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,18 +16,31 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::post("/register", [UserController::class, "createUser"]);
-
-Route::post("/login", [UserController::class, "loginUser"]);
-
-Route::put("/update/{idUser}", [UserController::class, "updateUser"]);
-
-Route::get ("/users", [UserController::class, "getUsers"]);
+// for user or particulier
+Route::post("/register/user", [UserController::class, "createUser"]);
+Route::post("/login/user", [UserController::class, "loginUser"]);
+Route::put("/update/user/{idUser}", [UserController::class, "updateUser"]);
+Route::get("/users", [UserController::class, "getUsers"]);
 Route::get("/users/{idUser}", [UserController::class, "getUserById"]);
+Route::delete("/delete/user/{idUser}", [UserController::class, "deleteUser"]);
 
-Route::delete("/delete/{idUser}", [UserController::class, "deleteUser"]);
+// Route::middleware('auth:api')->post('/logout', [UserController::class, 'logoutUser']);
+// Route::post('/logout/user', [UserController::class, 'logoutUser']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// for createur or professionnel
+Route::post("/register/createur", [CreateurController::class, "createCreateur"]);
+Route::post("/login/createur", [CreateurController::class, "loginCreateur"]);
+Route::get("/createurs/{idCreateur}", [CreateurController::class, "getCreateurById"]);
+Route::get("/createurs", [CreateurController::class, "getCreateurs"]);
+Route::put("/update/createur/{idCreateur}", [CreateurController::class, "updateCreateur"]);
+Route::delete("/delete/createur/{idCreateur}", [CreateurController::class, "deleteCreateur"]);
+
+// for articles
+Route::get("/articles", [ArticlesController::class, "index"]);
+Route::get("/articles/{idArticle}", [ArticlesController::class, "show"]);
+Route::post("/articles", [ArticlesController::class, "store"]);
+Route::put("/articles/{idArticle}", [ArticlesController::class, "update"]);
+Route::delete("/articles/{idArticle}", [ArticlesController::class, "destroy"]);
+
+Route::group(['middleware' => ['auth:sanctum']], function () {
 });

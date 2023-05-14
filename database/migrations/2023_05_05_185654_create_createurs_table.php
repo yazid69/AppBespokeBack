@@ -13,21 +13,22 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->unsignedInteger('idUser')->primary();
+        Schema::create('createurs', function (Blueprint $table) {
+            $table->unsignedInteger('idCreateur')->autoIncrement()->primary();
             $table->string('genre', 10);
             $table->string('nom', 30);
             $table->string('prenom', 30);
-            $table->date('date_naissance');
+            $table->date('dateNaissance');
             $table->string('email', 40)->unique();
-            $table->string('mdp_user', 30);
-            $table->string('num_tel', 20);
+            $table->string('mdpCreateur', 30);
+            $table->string('telCreateur', 20);
             $table->string('numRue', 255);
             $table->string('rue', 255);
             $table->string('ville', 255);
             $table->string('codePostal', 10);
             $table->string('pays', 100);
-            $table->rememberToken();
+            $table->date('debutActivite', 100);
+            $table->string('siret', 100);
             $table->timestamps();
         });
     }
@@ -39,6 +40,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('createurs');
     }
 };

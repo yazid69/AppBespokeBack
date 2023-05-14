@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class Createur extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -18,19 +17,21 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'idUser',
+        'idCreateur',
         'genre',
         'nom',
         'prenom',
-        'date_naissance',
-        'mdp_user',
+        'dateNaissance',
+        'mdpCreateur',
         'email',
-        'num_tel',
+        'telCreateur',
         'numRue',
         'rue',
         'ville',
         'codePostal',
         'pays',
+        'debutActivite',
+        'siret',
     ];
 
     /**
@@ -39,7 +40,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'mdp_user',
+        'mdpCreateur',
         'remember_token',
     ];
 
@@ -57,17 +58,6 @@ class User extends Authenticatable
      *
      * @return int
      */
-    protected $primaryKey = 'idUser';
+    protected $primaryKey = 'idCreateur';
 
-    /**
-     * Find the user instance for the given API token.
-     * 
-     * 
-     * @param string $token
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function findForPassport($token)
-    {
-        return $this->where('token', $token)->first();
-    }
 }
