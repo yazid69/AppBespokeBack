@@ -24,12 +24,12 @@ class CreateurController extends Controller
             "email" => ["required", "string", "email", "max:40", "unique:createurs"],
             "mdpCreateur" => ["required", "string", "min:8", "max:30"],
             "telCreateur" => ["required", "string", "max:20"],
-            "numRue" => ["required", "string", "max:10"],
-            "rue" => ["required", "string", "max:50"],
-            "codePostal" => ["required", "integer", "min:5"],
-            "ville" => ["required", "string", "max:30"],
-            "pays" => ["required", "string", "max:30"],
-            "debutActivite" => ["required", "date"],
+            "numRue" => ["nullable", "string", "max:10"],
+            "rue" => ["nullable", "string", "max:50"],
+            "codePostal" => ["nullable", "integer", "min:5"],
+            "ville" => ["nullable", "string", "max:30"],
+            "pays" => ["nullable", "string", "max:30"],
+            "debutActivite" => ["nullable", "date"],
             "siret" => ["required", "integer", "min:14"],
         ]);
         // hasher le mot de passe
@@ -107,13 +107,12 @@ class CreateurController extends Controller
             ], 401);
         }
         // créer le token
-        $session_id = Hash::make($createur->idCreateur);
-        $token = Str::random(60);
+        $tokenResult = $createur->createToken('authToken');
+        $token = $tokenResult->plainTextToken;
         // retourner la réponse avec le token
         return response()->json([
             "createur" => $createur,
-            "token" => $token,
-            "session_id" => $session_id,
+            "access_token" => $token,
             "message" => "Connexion réussie",
             "status" => 200,
         ]);

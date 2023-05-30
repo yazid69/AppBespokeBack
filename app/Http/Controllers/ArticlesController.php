@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Articles;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ArticlesController extends Controller
@@ -30,6 +31,9 @@ class ArticlesController extends Controller
      */
     public function store(Request $request)
     {
+        // recuperer l'id du createur connecté
+        $idCreateur = Auth::id();
+
         // Valider les données de la requête
         $articleDonnee = $request->validate([
             'nomArticle' => ["required", "string", "max:100"],
@@ -40,8 +44,10 @@ class ArticlesController extends Controller
             'taille' => ["required", "string", "max:10"],
             'couleur' => ["required", "string", "max:30"],
             'categorie' => ["required", "string", "max:30"],
-            'idCreateur' => ["required", "integer"],
         ]);
+
+        // Ajouter l'id du createur connecté
+        $articleDonnee['idCreateur'] = $idCreateur;
 
         // Vérifier si une image a été téléchargée
         if ($request->hasFile('photo')) {
@@ -115,17 +121,17 @@ class ArticlesController extends Controller
         }
 
         // verifier si l'article existe
-        $article = Articles::find($idArticle);
-        if (!$article) {
-            return response()->json(["message" => "Article non trouvé avec cet id $idArticle"], 404);
-        }
+        $article = Articles::findOrfail($idArticle);
+        // if (!$article) {
+        //     return response()->json(["message" => "Article non trouvé avec cet id $idArticle"], 404);
+        // }
         // Vérifier si l'utilisateur est autorisé à modifier l'article
-        if ($article->idCreateur != $request->idCreateur) {
+        if ($article->idCreateur != $request->createur()->id) {
             return response()->json(["message" => "Vous n'êtes pas autorisé à modifier cet article"], 401);
         }
 
         // Récupérer l'id de l'article dans la requête
-        $article = Articles::where('idArticle', $request->idArticle)->first();
+        // $article = Articles::where('idArticle', $request->idArticle)->first();
         // Mettre à jour l'article
         $article->update($articleValidation);
 

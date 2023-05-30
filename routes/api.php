@@ -23,9 +23,10 @@ Route::put("/update/user/{idUser}", [UserController::class, "updateUser"]);
 Route::get("/users", [UserController::class, "getUsers"]);
 Route::get("/users/{idUser}", [UserController::class, "getUserById"]);
 Route::delete("/delete/user/{idUser}", [UserController::class, "deleteUser"]);
+Route::patch('/reset-password/{uid}', [UserController::class, 'resetPassword']);
 
 // Route::middleware('auth:api')->post('/logout', [UserController::class, 'logoutUser']);
-// Route::post('/logout/user', [UserController::class, 'logoutUser']);
+Route::post('/logout/user', [UserController::class, 'logoutUser']);
 
 // for createur or professionnel
 Route::post("/register/createur", [CreateurController::class, "createCreateur"]);
@@ -38,9 +39,10 @@ Route::delete("/delete/createur/{idCreateur}", [CreateurController::class, "dele
 // for articles
 Route::get("/articles", [ArticlesController::class, "index"]);
 Route::get("/articles/{idArticle}", [ArticlesController::class, "show"]);
-Route::post("/articles", [ArticlesController::class, "store"]);
-Route::put("/articles/{idArticle}", [ArticlesController::class, "update"]);
-Route::delete("/articles/{idArticle}", [ArticlesController::class, "destroy"]);
 
-Route::group(['middleware' => ['auth:sanctum']], function () {
+
+Route::group(['middleware' => ['auth:sanctum', 'check.article.owner']], function () {
+    Route::post("/articles", [ArticlesController::class, "store"]);
+    Route::put("/articles/{idArticle}", [ArticlesController::class, "update"]);
+    Route::delete("/articles/{idArticle}", [ArticlesController::class, "destroy"]);
 });

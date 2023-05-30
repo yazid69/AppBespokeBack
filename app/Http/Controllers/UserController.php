@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Mail\InscriptionUserMail;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -24,11 +26,11 @@ class UserController extends Controller
             "email" => ["required", "string", "email", "max:40", "unique:users"],
             "mdp_user" => ["required", "string", "min:8", "max:30"],
             "num_tel" => ["required", "string", "max:20"],
-            "numRue" => ["required", "string", "max:10"],
-            "rue" => ["required", "string", "max:50"],
-            "codePostal" => ["required", "integer", "min:5"],
-            "ville" => ["required", "string", "max:30"],
-            "pays" => ["required", "string", "max:30"],
+            "numRue" => ["nullable", "string", "max:10"],
+            "rue" => ["nullable", "string", "max:50"],
+            "codePostal" => ["nullable", "integer", "min:5"],
+            "ville" => ["nullable", "string", "max:30"],
+            "pays" => ["nullable", "string", "max:30"],
         ]);
         // hasher le mot de passe
         $userDonnee["mdp_user"] = Hash::make($userDonnee["mdp_user"]);
@@ -97,6 +99,7 @@ class UserController extends Controller
             "email" => ["required", "string", "email", "max:40"],
             "mdp_user" => ["required", "string", "min:8", "max:30"],
         ]);
+
         // vérifier si l'utilisateur existe avec le bon mot de passe
         $user = User::where("email", $userDonnee["email"])->first();
         if (!$user || !Hash::check($userDonnee["mdp_user"], $user->mdp_user)) {
@@ -104,14 +107,15 @@ class UserController extends Controller
                 "message" => "Email ou mot de passe incorrect",
             ], 401);
         }
+
         // créer le token
-        $session_id = Hash::make($user->idUser);
-        $token = $user->createToken($session_id)->plainTextToken;
+        $tokenResult = $user->createToken('authToken');
+        $token = $tokenResult->plainTextToken;
+
         // retourner la réponse avec le token
         return response()->json([
             "user" => $user,
-            "token" => $token,
-            "session_id" => $session_id,
+            "access_token" => $token,
             "message" => "Connexion réussie",
             "status" => 200,
         ]);
@@ -211,6 +215,31 @@ class UserController extends Controller
             "status" => 200,
         ]);
     }
+
+    // public function resetPassword(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //         'mdp_user' => 'required|confirmed',
+    //         'token' => 'required'
+    //     ]);
+
+    //     $status = Password::reset(
+    //         $request->only('email', 'password', 'password_confirmation', 'token'),
+    //         function ($user) use ($request) {
+    //             $user->forceFill([
+    //                 'password' => Hash::make($request->password)
+    //             ])->save();
+
+    //             event(new PasswordReset($user));
+    //         }
+    //     );
+
+    //     return $status == Password::PASSWORD_RESET
+    //         ? response()->json(['message' => 'Password reset successfully.'])
+    //         : response()->json(['message' => __($status)]);
+    // }
+
 
     // public function logoutUser()
     // {
