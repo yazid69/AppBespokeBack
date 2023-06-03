@@ -3,7 +3,6 @@
 use App\Http\Controllers\CreateurController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ArticlesController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
