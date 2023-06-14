@@ -3,7 +3,6 @@
 use App\Http\Controllers\CreateurController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ArticlesController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,9 +23,6 @@ Route::get("/users", [UserController::class, "getUsers"]);
 Route::get("/users/{idUser}", [UserController::class, "getUserById"]);
 Route::delete("/delete/user/{idUser}", [UserController::class, "deleteUser"]);
 Route::patch('/reset-password/{uid}', [UserController::class, 'resetPassword']);
-
-// Route::middleware('auth:api')->post('/logout', [UserController::class, 'logoutUser']);
-Route::post('/logout/user', [UserController::class, 'logoutUser']);
 
 // for createur or professionnel
 Route::post("/register/createur", [CreateurController::class, "createCreateur"]);

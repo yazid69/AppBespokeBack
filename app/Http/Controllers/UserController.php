@@ -4,13 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Mail\InscriptionUserMail;
 use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -240,15 +237,4 @@ class UserController extends Controller
     //         : response()->json(['message' => __($status)]);
     // }
 
-
-    // public function logoutUser()
-    // {
-    //     auth()->user()->tokens()->each(function ($token, $key) {
-    //         $token->delete();
-    //     });
-    //     return response()->json([
-    //         "message" => "Déconnexion réussie",
-    //         "status" => 200,
-    //     ]);
-    // }
 }
